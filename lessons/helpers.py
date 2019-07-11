@@ -63,4 +63,7 @@ def tranform_columns_to_categorical(df: pd.DataFrame, ordered: Dict = dict()) ->
     return df
 
 
-def get_mapper(df: pd.DataFrame, ignored_columns: Optional[List[śtr]], )
+def separate_features_by_dtype(df: pd.DataFrame) -> Dict[str, List[str]]:
+    dtypes_df = pd.DataFrame(df.dtypes).reset_index().rename(columns={0: "dtype"})
+    dtypes_df["dtype"] = dtypes_df["dtype"].map(str)
+    return dtypes_df.groupby("dtype")["index"].apply(list).to_dict()
