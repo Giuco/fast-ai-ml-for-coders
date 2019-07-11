@@ -11,6 +11,8 @@ sklearn = "*"
 matplotlib = "*"
 jupyterlab = "*"
 requests = "*"
+kaggle = "*"
+toolz = "*"
 
 [requires]
 python_version = "3.7"
