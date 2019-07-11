@@ -13,6 +13,7 @@ jupyterlab = "*"
 requests = "*"
 kaggle = "*"
 toolz = "*"
+pyarrow = "*"
 
 [requires]
 python_version = "3.7"
