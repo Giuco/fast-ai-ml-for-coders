@@ -14,6 +14,7 @@ requests = "*"
 kaggle = "*"
 toolz = "*"
 pyarrow = "*"
+fklearn = "*"
 
 [requires]
 python_version = "3.7"
