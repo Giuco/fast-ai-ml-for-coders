@@ -7,3 +7,5 @@ kaggle
 toolz
 pyarrow
 fklearn
+unidecode
+

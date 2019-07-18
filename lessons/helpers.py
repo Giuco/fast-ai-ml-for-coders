@@ -1,8 +1,9 @@
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype, is_string_dtype
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple, Callable
 import re
 from toolz import compose
+from unidecode import unidecode
 
 
 def display_all(df: pd.DataFrame):
@@ -67,3 +68,68 @@ def separate_features_by_dtype(df: pd.DataFrame) -> Dict[str, List[str]]:
     dtypes_df = pd.DataFrame(df.dtypes).reset_index().rename(columns={0: "dtype"})
     dtypes_df["dtype"] = dtypes_df["dtype"].map(str)
     return dtypes_df.groupby("dtype")["index"].apply(list).to_dict()
+
+
+def onehot_categorizer(df: pd.DataFrame, columns_to_categorize: List[str], drop_original: bool = True, drop_first_columns: bool = True) -> Tuple[Callable, pd.DataFrame, Dict]:
+    categ_getter = lambda col: list(np.sort(df[col].dropna(axis=0, how='any').unique()))
+    vec = {column: categ_getter(column) for column in sorted(columns_to_categorize)}
+
+    def p(new_df: pd.DataFrame) -> pd.DataFrame:
+        col_name_creator = lambda r: f"fklearn_feat__{r}"
+        dummies_df = pd.get_dummies(
+            new_df,
+            prefix=list(map(col_name_creator, columns_to_categorize)),
+            prefix_sep="==",
+            columns=columns_to_categorize
+        )
+        
+        categories_missing = list()
+        
+        for column, categories in vec.items():
+            for category in categories:
+                new_column_name = f"fklean_feat__{column}=={category}"
+                
+                if new_column_name not in dummies_df.columns:
+                    categories_missing.append(new_column_name)
+        
+        missing_df = pd.DataFrame(np.zeros((len(new_df), len(categories_missing))), columns=categories_missing)
+        
+        if drop_original:
+            new_df = new_df.drop(columns_to_categorize, axis=1)
+            
+        new_df = pd.concat([new_df, dummies_df, missing_df], axis=1)
+        
+        if drop_first_columns:
+            first_columns = list()
+            for column, categories in vec.items():
+                category = categories[0]
+                new_column_name = f"fklean_feat__{column}=={category}"
+                first_columns.append(new_column_name)
+            
+    
+            new_df = new_df.drop(first_columns, axis=1)
+        
+        return new_df
+    
+    return p, p(df), None
+
+
+def to_normalized_string(original_name):
+    """
+    >>> to_normalized_string('São Paulo/Moema-1')
+    'sao_paulo_moema_1'
+    """
+    ascii_name = to_lowercase_ascii(original_name)
+    return re.sub(r'[^\w]+', '_', ascii_name)
+
+
+def to_lowercase_ascii(unicode_string):
+    """
+    >>> to_lowercase_ascii(u'André')
+    'andre'
+    """
+    return to_ascii(unicode_string).lower()
+
+
+def to_ascii(unicode_string):
+    return unidecode(unicode_string)
