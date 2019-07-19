@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Tuple, Callable
 import re
 from toolz import compose
 from unidecode import unidecode
-from sklearn.tree import export_graphviz
+from sklearn.tree import export_graphviz, DecisionTreeRegressor
 import IPython
 import graphviz
 
@@ -117,7 +117,7 @@ def onehot_categorizer(df: pd.DataFrame, columns_to_categorize: List[str], drop_
     return p, p(df), None
 
 
-def to_normalized_string(original_name):
+def to_normalized_string(original_name: str) -> str:
     """
     >>> to_normalized_string('São Paulo/Moema-1')
     'sao_paulo_moema_1'
@@ -126,7 +126,7 @@ def to_normalized_string(original_name):
     return re.sub(r'[^\w]+', '_', ascii_name)
 
 
-def to_lowercase_ascii(unicode_string):
+def to_lowercase_ascii(unicode_string: str) -> str:
     """
     >>> to_lowercase_ascii(u'André')
     'andre'
@@ -134,11 +134,11 @@ def to_lowercase_ascii(unicode_string):
     return to_ascii(unicode_string).lower()
 
 
-def to_ascii(unicode_string):
+def to_ascii(unicode_string: str) -> str:
     return unidecode(unicode_string)
 
 
-def draw_tree(t, df: pd.DataFrame, size=10, ratio=0.6, precision=0):
+def draw_tree(t: DecisionTreeRegressor, df: pd.DataFrame, size: int = 10, ratio: float = 0.6, precision=0):
     """ Draws a representation of a random forest in IPython.
     Parameters:
     -----------
